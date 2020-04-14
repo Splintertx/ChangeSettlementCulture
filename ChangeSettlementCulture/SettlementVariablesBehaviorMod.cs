@@ -25,9 +25,9 @@ namespace ChangeSettlementCulture
 
         public void OnSettlementOwnerChangedMod(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
         {
-            if (!Campaign.Current.GameStarted)
+            if (!Campaign.Current.GameStarted || oldOwner.Clan.Kingdom == null || newOwner == null)
                 return;
-            
+
             if (oldOwner.Clan.Kingdom.Culture.StringId != newOwner.Clan.Kingdom.Culture.StringId)
             {
                 changeSettlementCulture(settlement, newOwner.Culture);
@@ -36,14 +36,26 @@ namespace ChangeSettlementCulture
 
         public void OnClanChangedKingdomMod(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, bool byRebellion, bool showNotification)
         {
-            if (!clan.Settlements.Any())
+            if (clan.Settlements == null || !clan.Settlements.Any())
                 return;
 
-            if (oldKingdom.Culture.StringId != newKingdom.Culture.StringId)
+            // Attempt to set culture based on kingdom
+            if (oldKingdom != null && newKingdom != null)
+            {
+                if (oldKingdom.Culture.StringId != newKingdom.Culture.StringId)
+                {
+                    foreach (var settlement in clan.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
+                    {
+                        changeSettlementCulture(settlement, newKingdom.Culture);
+                    }
+                }
+            }
+            // Fallback to setting culture based on clan
+            else if (clan.Settlements != null)
             {
                 foreach (var settlement in clan.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
                 {
-                    changeSettlementCulture(settlement, newKingdom.Culture);
+                    changeSettlementCulture(settlement, clan.Culture);
                 }
             }
         }
@@ -55,18 +67,11 @@ namespace ChangeSettlementCulture
 
             foreach (Settlement settlement in Campaign.Current.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
             {
-                //try
-                //{
-                    if (settlement.Culture.StringId != settlement.OwnerClan.Culture.StringId)
-                    {
-                        changeSettlementCulture(settlement, settlement.OwnerClan.Kingdom.Culture);
-                    }
-                //}
-                //catch (Exception ex)
-                //{
-                //    System.Windows.Forms.MessageBox.Show("Error attempting to change a settlement's culture: " + String.Join(",", settlement.Name, settlement.OwnerClan.Kingdom.Culture, ex.Message));
-                //    return;
-                //}
+                if (settlement.Culture.StringId != settlement.OwnerClan.Culture.StringId)
+                {
+                    changeSettlementCulture(settlement, settlement.OwnerClan.Kingdom.Culture);
+                }
+                //System.Windows.Forms.MessageBox.Show("Error attempting to change a settlement's culture: " + String.Join(",", settlement.Name, settlement.OwnerClan.Kingdom.Culture, ex.Message));
             }
         }
 

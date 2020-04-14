@@ -2,7 +2,7 @@
 <Module>
 	<Name value="Change Settlement Culture"/>
 	<Id value="ChangeSettlementCulture"/>
-	<Version value="v1.0.0"/>
+	<Version value="v1.0.1"/>
 	<DefaultModule value="false"/>
 	<SingleplayerModule value="true"/>
 	<MultiplayerModule value="false"/>
