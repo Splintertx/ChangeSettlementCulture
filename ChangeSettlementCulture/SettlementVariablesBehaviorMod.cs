@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -27,23 +24,8 @@ namespace ChangeSettlementCulture
         {
             if (!Campaign.Current.GameStarted)
                 return;
-            
-            // Attempt to set culture based on kingdoms
-            if (oldOwner.Clan.Kingdom != null && newOwner.Clan.Kingdom != null)
-            {
-                if (oldOwner.Clan.Kingdom.Culture.StringId != newOwner.Clan.Kingdom.Culture.StringId)
-                {
-                    changeSettlementCulture(settlement, newOwner.Clan.Kingdom.Culture);
-                }
-            }
-            // Fallback to setting culture on clan
-            else if (oldOwner.Clan != null && newOwner.Clan != null)
-            {
-                if (oldOwner.Clan.Culture != newOwner.Clan.Culture)
-                {
-                    changeSettlementCulture(settlement, newOwner.Clan.Culture);
-                }
-            }
+
+            changeSettlementCulture(settlement);
         }
 
         public void OnClanChangedKingdomMod(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, bool byRebellion, bool showNotification)
@@ -51,25 +33,8 @@ namespace ChangeSettlementCulture
             if (clan.Settlements == null || !clan.Settlements.Any())
                 return;
 
-            // Attempt to set culture based on kingdom
-            if (oldKingdom != null && newKingdom != null)
-            {
-                if (oldKingdom.Culture.StringId != newKingdom.Culture.StringId)
-                {
-                    foreach (var settlement in clan.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
-                    {
-                        changeSettlementCulture(settlement, newKingdom.Culture);
-                    }
-                }
-            }
-            // Fallback to setting culture based on clan
-            else if (clan.Settlements != null)
-            {
-                foreach (var settlement in clan.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
-                {
-                    changeSettlementCulture(settlement, clan.Culture);
-                }
-            }
+            foreach (var settlement in clan.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
+                changeSettlementCulture(settlement);
         }
 
         public void OnGameLoaded(CampaignGameStarter starter)
@@ -78,38 +43,30 @@ namespace ChangeSettlementCulture
                 return;
 
             foreach (Settlement settlement in Campaign.Current.Settlements.Where(x => x.IsVillage || x.IsCastle || x.IsTown))
-            {
-                if (settlement.Culture.StringId != settlement.OwnerClan.Culture.StringId)
-                {
-                    changeSettlementCulture(settlement, settlement.OwnerClan.Kingdom.Culture);
-                }
-                //System.Windows.Forms.MessageBox.Show("Error attempting to change a settlement's culture: " + String.Join(",", settlement.Name, settlement.OwnerClan.Kingdom.Culture, ex.Message));
-            }
+                changeSettlementCulture(settlement);
         }
 
-        void changeSettlementCulture(Settlement settlement, CultureObject culture)
+        void changeSettlementCulture(Settlement settlement)
         {
-            var editableSettlement = Campaign.Current.Settlements.Where(x => x.StringId == settlement.StringId).FirstOrDefault();
-            editableSettlement.Culture = culture;
+            if (!(settlement.IsTown || settlement.IsCastle || settlement.IsVillage))
+                return;
+
+            var ownerCulture = settlement.OwnerClan?.Kingdom?.Culture ?? settlement.OwnerClan.Culture;
+
+            if (settlement.Culture != ownerCulture)
+                settlement.Culture = ownerCulture;
 
             // Attempt to set attached villages
-            if (editableSettlement.BoundVillages != null)
+            if (settlement.BoundVillages != null)
             {
-                foreach (Village attached in editableSettlement.BoundVillages)
+                foreach (Village attached in settlement.BoundVillages)
                 {
                     if (attached.Settlement == null)
                         continue;
 
-                    var editableBound = Campaign.Current.Settlements.Where(x => x.StringId == attached.Settlement.StringId).FirstOrDefault();
-                    editableBound.Culture = culture;
-
-                    if (!(!editableBound.IsVillage && !editableBound.IsFortification))
-                        editableBound.CalculateSettlementValueForFactions();
+                    changeSettlementCulture(attached.Settlement);
                 }
             }
-
-            if (!(!editableSettlement.IsVillage && !editableSettlement.IsFortification))
-                editableSettlement.CalculateSettlementValueForFactions();
         }
     }
 }

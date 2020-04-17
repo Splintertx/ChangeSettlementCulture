@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.Windows.Forms;
-
-using TaleWorlds.CampaignSystem;
+﻿using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
@@ -21,13 +13,7 @@ namespace ChangeSettlementCulture
             if (!(game.GameType is Campaign))
                 return;
 
-            this.AddBehaviors((CampaignGameStarter)gameStarter);
-        }
-
-        private void AddBehaviors(CampaignGameStarter gameStarter)
-        {
-            //gameStarter.AddBehavior((CampaignBehaviorBase)new ChangeCultureBehavior());
-            gameStarter.AddBehavior(new SettlementVariablesBehaviorMod());
+            ((CampaignGameStarter)gameStarter).AddBehavior(new SettlementVariablesBehaviorMod());
         }
     }
 }
