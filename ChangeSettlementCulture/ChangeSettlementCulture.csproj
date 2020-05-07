@@ -48,6 +48,9 @@
     <Reference Include="TaleWorlds.Localization">
       <HintPath>$(MOUNT_AND_BLADE_DIR)bin\Win64_Shipping_Client\TaleWorlds.Localization.dll</HintPath>
     </Reference>
+    <Reference Include="TaleWorlds.ObjectSystem">
+      <HintPath>$(MOUNT_AND_BLADE_DIR)bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
