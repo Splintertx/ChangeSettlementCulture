@@ -54,7 +54,7 @@ namespace ChangeSettlementCulture
             // Do not convert the last remaining town of a culture. Companions need a place to spawn or there will be crashes
             if (settlement.IsTown)
             {
-                var remainingTowns = Campaign.Current.Settlements.Where(s => s.Culture == settlement.Culture).Count();
+                var remainingTowns = Campaign.Current.Settlements.Where(s => s.IsTown && s.Culture == settlement.Culture).Count();
                 if (remainingTowns == 1)
                     return;
             }
